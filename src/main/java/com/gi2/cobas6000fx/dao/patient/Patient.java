@@ -4,26 +4,22 @@ import java.time.LocalDate;
 
 public class Patient {
     
-    private final String cin;
+    public final String cin;
     private String fullName;
-    private final LocalDate dob;
+    public final LocalDate dob;
 
     public Patient(String fullName, String cin, LocalDate dob) {
-        this.fullName = fullName;
+        
+        assert !fullName.isEmpty();
+        assert !cin.isEmpty();
+
         this.cin = cin;
+        this.fullName = fullName;
         this.dob = dob;
     }
 
     public String getFullName(){
         return fullName;
-    }
-
-    public String getCin(){
-        return cin;
-    }
-
-    public LocalDate getDob(){
-        return dob;
     }
 
     public boolean equals(Object o){

@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import java.time.LocalDate;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +29,7 @@ public class PatientRepo implements Repo<Patient, String> {
         Patient p = null;
 
         final String sql = String.format(
-            "SELECT * FROM Patient where cin = %s", cin
+            "SELECT * FROM Patient where cin = '%s'", cin
         );
     
         Statement stmt;
@@ -92,29 +94,27 @@ public class PatientRepo implements Repo<Patient, String> {
     }
 
     @Override
-    public boolean add(Patient t) {
-        
-        return false;
-    }
-
-    @Override
-    public boolean add(Patient patients...) {
-        String sql = "INSERT INTO Patient VALUES ";
+    public boolean add(Patient ...patients) {
+        // preparing the query
+        String sql = "INSERT INTO `Patient` VALUES ";
         for(Patient p: patients){
-            sql += String.format(
-                "(%s, %s, %s)", p.getCin(), p.getFullName(), p.getDob().toString()
-            );
+
+            sql = String.join(", ", sql, String.format(
+                "('%s', '%s', '%s')",
+                p.cin,
+                p.getFullName(), 
+                p.dob.toString()
+            ));
+
         }
 
         Statement stmt;
-        int i;
-
+        int nRows = 0;
+        // execute the query
         try(Connection conn = connect()){
 
             stmt = conn.createStatement();
-            i = stmt.executeUpdate(sql);
-
-            System.out.println(i);
+            nRows = stmt.executeUpdate(sql);
 
             stmt.close();
             conn.close();
@@ -122,14 +122,29 @@ public class PatientRepo implements Repo<Patient, String> {
         }catch(SQLException e){
             e.printStackTrace();
         }
-
-        return false;
+        // return if all the records are saved
+        return (nRows == patients.length);
     }
 
     @Override
-    public boolean remove(String id) {
-        // TODO Auto-generated method stub
-        return false;
+    public boolean remove(String cin) {
+        String sql = String.format(
+            "DELETE FROM Patient WHERE cin='%s'", cin
+        );
+
+        Statement stmt;
+        boolean removed = false;
+
+        try(Connection conn = connect()){
+            stmt = conn.createStatement();
+            removed = (stmt.executeUpdate(sql) == 1);
+            stmt.close();
+            conn.close();
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return removed;
     }
 
 }
